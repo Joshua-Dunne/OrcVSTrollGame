@@ -7,7 +7,9 @@
 #define GAME_HPP
 
 #include <iostream>
+#include "Character.h"
 #include "Troll.h"
+#include <time.h>   // allows use of time() function
 
 struct Game
 {
@@ -23,15 +25,25 @@ private:
 	void update();
 
 	enum GameState { MENU, GAMEPLAY, QUIT };
-	GameState currentState{ MENU };
+	enum TurnState{TROLL, ORC};
+	GameState m_currentState{ MENU };
+	TurnState m_currentTurn{ ORC };
 
-	int quitGame = 0;
+	int m_quitGame = 0;
 
-	int trollDamage = 0;
-	int orcDamage = 0;
+	int m_trollDamage = 0;
+	int m_orcDamage = 0;
 
-	Troll troll;
+	Troll m_troll{ Character::WeaponChoice::SWORD, Character::SpellChoice::DBREATH, Character::ShieldChoice::ICE };
+	// make the troll start with a sword, dragon breath and ice shield
+
 	// Orc orc; <-- used later
+
+	int m_roundCount = 0;
+
+	Character * m_currentPlayer = &m_troll;
+	int* m_currentDamage = &m_trollDamage;
+	std::string m_currentName = m_currentPlayer->getName();
 };
 
 #endif // !GAME_HPP
