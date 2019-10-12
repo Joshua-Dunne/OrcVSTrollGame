@@ -26,9 +26,22 @@ protected:
 
 	std::string m_name;
 
+	WeaponChoice m_chosenWep{ FISTS };
+	SpellChoice m_chosenSpell{ IBEAM };
+	ShieldChoice m_chosenShield{ ICE };
+
 public:
 
-	virtual int calcDamage(WeaponChoice t_enemyWep, SpellChoice t_enemySpell) = 0;
+	virtual int calcDamage(WeaponChoice t_enemyWep, SpellChoice t_enemySpell, 
+								   bool t_usingWeapon, bool t_usingSpell) = 0;
+
+	virtual bool isUsingWep() const = 0;
+	virtual bool isUsingSpell() const = 0;
+	virtual void pickAction() = 0;
+
 	std::string getName() const { return m_name; };
+	WeaponChoice getWeapon() const { return m_chosenWep; };
+	SpellChoice getSpell() const { return m_chosenSpell; };
+	ShieldChoice getShield() const { return m_chosenShield; };
 };
 

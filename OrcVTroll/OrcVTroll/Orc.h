@@ -1,14 +1,13 @@
 #pragma once
 #include "Character.h"
-#include <stdlib.h> // allows use of rand() function, as Troll is AI controlled.
+#include <iostream>
 
-class Troll : public Character
+class Orc : public Character
 {
 public:
-	Troll();
-	Troll(Character::WeaponChoice t_startingWep, Character::SpellChoice t_startingSpell, 
-												Character::ShieldChoice t_startingShield);
-	~Troll();
+	Orc();
+	Orc(Character::WeaponChoice t_startingWep, Character::SpellChoice t_startingSpell, Character::ShieldChoice t_startingShield);
+	~Orc();
 
 private:
 	int m_takenDamage = 0; // how much damage they've taken
@@ -29,7 +28,6 @@ public:
 	virtual bool isUsingWep() const;
 	virtual bool isUsingSpell() const;
 	virtual int calcDamage(Character::WeaponChoice t_enemyWep, Character::SpellChoice t_enemySpell,
-															bool t_usingWeapon, bool t_usingSpell);
-	
+														    bool t_usingWeapon, bool t_usingSpell);
 };
 

@@ -50,7 +50,7 @@ void Troll::chooseShield()
 /// <summary>
 /// Randomly decide if the shield will be used this action.
 /// </summary>
-void Troll::useShield()
+bool Troll::useShield()
 {
 	if (!m_shieldUsed) // make sure the shield hasn't already been used
 	{
@@ -64,6 +64,8 @@ void Troll::useShield()
 			m_shieldUsed = true;
 		}
 	}
+
+	return m_shieldActive;
 }
 
 void Troll::pickAction()
@@ -76,19 +78,33 @@ void Troll::pickAction()
 		if (chance > 0 || chance <= 10)
 		{
 			// use weapon
+			m_usingWeapon = true;
+			actionPicked = true;
 		}
 		else if (chance > 10 || chance <= 20)
 		{
 			// use spell
+			m_usingSpell = true;
+			actionPicked = true;
 		}
 		else if (chance > 20 || chance <= 30)
 		{
 			// use shield
+			if (useShield()) // returns a bool (true - activated shield, false didnt activate shield
+			actionPicked = true;
 		}
 	}
 	chance = rand() % 30 + 1;
+}
 
-	
+bool Troll::isUsingWep() const
+{
+	return m_usingWeapon;
+}
+
+bool Troll::isUsingSpell() const
+{
+	return m_usingSpell;
 }
 
 /// <summary>
@@ -97,12 +113,13 @@ void Troll::pickAction()
 /// <param name="t_enemyWep">Enemy's weapon type</param>
 /// <param name="t_enemySpell">Enemy's chosen spell</param>
 /// <returns>Total damage taken</returns>
-int Troll::calcDamage(Character::WeaponChoice t_enemyWep, Character::SpellChoice t_enemySpell)
+int Troll::calcDamage(Character::WeaponChoice t_enemyWep, Character::SpellChoice t_enemySpell,
+	bool t_usingWeapon, bool t_usingSpell)
 {
 	int finalDamage = 0; // total damage taken 
 	int chance = 0; // decide if effects go through
 
-	if (m_usingWeapon)
+	if (t_usingWeapon) // if the enemy is using their weapon
 	{
 		switch (t_enemyWep)
 		{
@@ -140,7 +157,7 @@ int Troll::calcDamage(Character::WeaponChoice t_enemyWep, Character::SpellChoice
 		}
 	}
 
-	if (m_usingSpell)
+	if (t_usingSpell) // if the enemy is using a spell
 	{
 		switch (t_enemySpell)
 		{
