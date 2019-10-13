@@ -1,3 +1,8 @@
+/// <summary>
+/// Joshua Dunne
+/// C00241588
+/// </summary>
+
 #include "Troll.h"
 
 Troll::Troll()
@@ -27,6 +32,7 @@ void Troll::chooseWeapon()
 {
 	int randomWep = rand() % 6 + 1; // 1 -> 7
 	m_chosenWep = static_cast<WeaponChoice>(randomWep);
+	m_turnPriority = m_weaponPriorities[randomWep];
 }
 
 /// <summary>
@@ -47,68 +53,123 @@ void Troll::chooseShield()
 	m_chosenShield = static_cast<ShieldChoice>(randomShield);
 }
 
+void Troll::decreaseShieldDuration()
+{
+	if (m_shieldActive) // take away from the duration while the shield is active
+		m_shieldDuration--;
+
+	if (m_shieldDuration <= 0 && m_shieldActive) // once the shield's duration is up,
+	{
+		m_shieldActive = false; // the shield is no longer active
+		std::cout << "Shield ran out!" << std::endl << std::endl;
+	}
+}
+
 /// <summary>
 /// Randomly decide if the shield will be used this action.
 /// </summary>
 bool Troll::useShield()
 {
+	bool shieldActivated = false;
+
 	if (!m_shieldUsed) // make sure the shield hasn't already been used
 	{
 		int chance = 0;
 
 		chance = rand() % 10 + 1;
 
-		if (chance > 5) // 50% chance of deciding to activate shield
-		{
+		if (chance > 5 && !m_shieldActive) // 50% chance of deciding to activate shield
+		{								   // make sure shield is not active before activating it
 			m_shieldActive = true;
 			m_shieldUsed = true;
+			shieldActivated = true;
 		}
 	}
 
-	return m_shieldActive;
+	return shieldActivated;
 }
 
+/// <summary>
+/// Get the Player's weapon priority to decide turn order
+/// </summary>
+int Troll::getPriority() const
+{
+	return m_turnPriority;
+}
+
+/// <summary>
+/// Randomly pick an action for the AI to perform.
+/// 1 -> 10: Use Weapon
+/// 11 -> 20: Use Spell
+/// 21 -> 30: Use Shield
+/// </summary>
 void Troll::pickAction()
 {
 	int chance = 0;
 	bool actionPicked = false;
 
-	while (!actionPicked)
+	if (!m_paralysed)
 	{
-		if (chance > 0 || chance <= 10)
+		while (!actionPicked)
 		{
-			// use weapon
-			m_usingWeapon = true;
-			actionPicked = true;
-		}
-		else if (chance > 10 || chance <= 20)
-		{
-			// use spell
-			m_usingSpell = true;
-			actionPicked = true;
-		}
-		else if (chance > 20 || chance <= 30)
-		{
-			// use shield
-			if (useShield()) // returns a bool (true - activated shield, false didnt activate shield
-			actionPicked = true;
+			chance = rand() % 30 + 1;
+
+			if (chance > 0 && chance <= 10)
+			{
+				// use weapon
+				m_usingWeapon = true;
+				m_usingSpell = false;
+				actionPicked = true;
+			}
+			else if (chance > 10 && chance <= 20)
+			{
+				// use spell
+				m_usingSpell = true;
+				m_usingWeapon = false;
+				actionPicked = true;
+			}
+			else if (chance > 20 && chance <= 30)
+			{
+				// use shield
+				if (useShield()) // returns a bool (true - activated shield, false didnt activate shield
+				{
+					actionPicked = true;
+					m_usingSpell = false;
+					m_usingWeapon = false;
+				}
+			}
 		}
 	}
-	chance = rand() % 30 + 1;
+	else
+	{
+		std::cout << "*******************************************" << std::endl;
+		std::cout << "Troll is paralysed! They cannot act this turn!" << std::endl;
+		std::cout << "*******************************************" << std::endl;
+		m_paralysed = false; // now that their turn has been skipped for this round, let them act again next time
+	}
+	
 }
 
+/// <summary>
+/// Is the AI using a weapon?
+/// </summary>
+/// <returns>If the AI is using a weapon</returns>
 bool Troll::isUsingWep() const
 {
 	return m_usingWeapon;
 }
 
+/// <summary>
+/// Is the AI using a spell?
+/// </summary>
+/// <returns>If the AI is using a spell</returns>
 bool Troll::isUsingSpell() const
 {
 	return m_usingSpell;
 }
 
 /// <summary>
-/// Calculate damage the Troll will take, based on what the Troll chose to do
+/// Calculate damage the AI will take, based on what the Player chose to do
 /// </summary>
 /// <param name="t_enemyWep">Enemy's weapon type</param>
 /// <param name="t_enemySpell">Enemy's chosen spell</param>
@@ -199,7 +260,7 @@ int Troll::calcDamage(Character::WeaponChoice t_enemyWep, Character::SpellChoice
 		case SpellChoice::FBITE:
 
 			if (!m_shieldActive || m_chosenShield != ShieldChoice::ICE)  // if they don't have their shield up
-			{
+			{															 // or if the shield they chose wasn't ice
 				finalDamage += m_spellDamages[SpellChoice::FBITE];
 				std::cout << "Hit with Frost Bite! Troll took " << m_spellDamages[SpellChoice::FBITE] << " damage!" << std::endl;;
 			}
@@ -212,16 +273,16 @@ int Troll::calcDamage(Character::WeaponChoice t_enemyWep, Character::SpellChoice
 		case SpellChoice::IBEAM:
 
 			if (!m_shieldActive || m_chosenShield != ShieldChoice::ICE)  // if they don't have their shield up
-			{														  // or if the shield they chose wasn't fire
+			{														  // or if the shield they chose wasn't ice
 				finalDamage += m_spellDamages[SpellChoice::IBEAM];;
 				std::cout << "Hit with Ice Beam! Troll took " << m_spellDamages[SpellChoice::IBEAM] << " damage!" << std::endl;
 
 				chance = rand() % 10 + 1;
 
-				if (chance > 7) // 30% chance to burn
+				if (chance > 5) // 50% chance to freeze
 				{
 					m_frozen = true;
-					std::cout << "Troll was frozen solid! He'll go second in the next round!" << std::endl;
+					std::cout << "Orc was frozen solid! They may go second in the next round!" << std::endl;
 				}
 			}
 			else
@@ -233,16 +294,16 @@ int Troll::calcDamage(Character::WeaponChoice t_enemyWep, Character::SpellChoice
 		case SpellChoice::SBOLT:
 
 			if (!m_shieldActive || m_chosenShield != ShieldChoice::ELEC)  // if they don't have their shield up
-			{														  // or if the shield they chose wasn't fire
+			{														  // or if the shield they chose wasn't electric
 				finalDamage += m_spellDamages[SpellChoice::SBOLT];
 				std::cout << "Hit with Sky Bolt! Troll took " << m_spellDamages[SpellChoice::SBOLT] << " damage!" << std::endl;
 
 				chance = rand() % 10 + 1;
 
-				if (chance > 9) // 10% chance to burn
+				if (chance > 9) // 10% chance to paralyse
 				{
 					m_paralysed = true;
-					std::cout << "Troll was paralysed! Troll misses his next action!" << std::endl;
+					std::cout << "Troll was paralysed! Troll misses their next action!" << std::endl;
 				}
 			}
 			else
@@ -261,6 +322,11 @@ int Troll::calcDamage(Character::WeaponChoice t_enemyWep, Character::SpellChoice
 	{
 		finalDamage += 2;
 		std::cout << "On fire! Troll took 2 damage." << std::endl;
+	}
+
+	if (m_frozen)
+	{
+		m_turnPriority = 0; // if frozen, always go last (unless both players have low priority)
 	}
 
 	return finalDamage;

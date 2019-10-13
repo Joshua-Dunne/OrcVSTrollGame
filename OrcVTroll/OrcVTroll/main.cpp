@@ -1,8 +1,8 @@
 /// <summary>
 /// Joshua Dunne
 /// C00241588
-/// Date(s): 05/10/19, 
-/// Time Taken: 0 Hours
+/// Date(s): 05/10/19, 06/10/19, 12/10/19, 13/10/19
+/// Time Taken: ~10 Hours
 /// 
 /// Orc VS Troll Game
 /// </summary>

@@ -1,3 +1,8 @@
+/// <summary>
+/// Joshua Dunne
+/// C00241588
+/// </summary>
+
 #pragma once
 #include "Character.h"
 #include <iostream>
@@ -12,6 +17,8 @@ public:
 private:
 	int m_takenDamage = 0; // how much damage they've taken
 	int m_spellsLeft = 2; // how many spells that can be used
+	int m_shieldDuration = 2; // how many turns the shield can last for
+	int m_turnPriority = 0; // if the Orc goes first or second (0 is last, 1 is neutral, 2 is first)
 
 	bool m_usingWeapon = false; // used to say if the AI is attacking with a weapon
 	bool m_usingSpell = false; // used to say if the AI is attacking with a spell
@@ -23,7 +30,10 @@ public:
 	void chooseWeapon();
 	void chooseSpell();
 	void chooseShield();
+	void decreaseShieldDuration();
 	bool useShield();
+	bool useSpell();
+	int getPriority() const;
 	virtual void pickAction();
 	virtual bool isUsingWep() const;
 	virtual bool isUsingSpell() const;

@@ -1,3 +1,8 @@
+/// <summary>
+/// Joshua Dunne
+/// C00241588
+/// </summary>
+
 #include "Orc.h"
 
 Orc::Orc()
@@ -37,24 +42,31 @@ void Orc::chooseWeapon()
 			{
 			case 1:
 				std::cout << "You chose a Lance" << std::endl << std::endl;
+				m_turnPriority = m_weaponPriorities[1];
 				break;
 			case 2:
 				std::cout << "You chose a Sword" << std::endl << std::endl;
+				m_turnPriority = m_weaponPriorities[2];
 				break;
 			case 3:
 				std::cout << "You chose an Axe" << std::endl << std::endl;
+				m_turnPriority = m_weaponPriorities[3];
 				break;
 			case 4:
 				std::cout << "You chose a Hammer" << std::endl << std::endl;
+				m_turnPriority = m_weaponPriorities[4];
 				break;
 			case 5:
 				std::cout << "You chose your Fists" << std::endl << std::endl;
+				m_turnPriority = m_weaponPriorities[5];
 				break;
 			case 6:
 				std::cout << "You chose a Dagger" << std::endl << std::endl;
+				m_turnPriority = m_weaponPriorities[6];
 				break;
 			case 7:
 				std::cout << "You chose a Flail" << std::endl << std::endl;
+				m_turnPriority = m_weaponPriorities[7];
 				break;
 			}
 
@@ -73,7 +85,6 @@ void Orc::chooseWeapon()
 void Orc::chooseSpell()
 {
 	int spellChoice = 0;
-
 
 	while (spellChoice <= 0 || spellChoice > 5) // make sure we're inside of range 1 to 5
 	{												//  if the user puts in something wrong
@@ -148,67 +159,164 @@ void Orc::chooseShield()
 	}
 }
 
+/// <summary>
+/// Decrease how long the shield stays active for, once it's activated
+/// </summary>
+void Orc::decreaseShieldDuration()
+{
+	if (m_shieldActive) // take away from the duration while the shield is active
+		m_shieldDuration--;
+
+	if (m_shieldDuration <= 0 && m_shieldActive) // once the shield's duration is up,
+	{
+		m_shieldActive = false; // the shield is no longer active
+		std::cout << "Shield ran out!" << std::endl << std::endl;
+	}
+}
+
+/// <summary>
+/// Let the Orc use a Shield (if available)
+/// </summary>
+/// <returns>If the shield was used, returns true</returns>
 bool Orc::useShield()
 {
+	bool shieldActivated = false;
+
 	if (!m_shieldUsed) // make sure the shield hasn't already been used
 	{
 		m_shieldActive = true;
 		m_shieldUsed = true;
-		std::cout << "Shield used!" << std::endl;
+		std::cout << "Shield used!" << std::endl << std::endl;
+		shieldActivated = true;
 	}
 	else if (m_shieldActive && m_shieldUsed)
 	{
-		std::cout << "Shield already used and currently active!" << std::endl;
+		std::cout << "Shield already used and currently active!" << std::endl << std::endl;
 	} 
 	else if (!m_shieldActive && m_shieldUsed)
 	{
-		std::cout << "Shield is out of uses!" << std::endl;
+		std::cout << "Shield is out of uses!" << std::endl << std::endl;
 	}
 
-	return m_shieldActive;
+	return shieldActivated;
 }
 
+/// <summary>
+/// Let the Orc use a spell (if needed)
+/// </summary>
+/// <returns>If the spell was used</returns>
+bool Orc::useSpell()
+{
+	bool spellUsed = false;
+
+	if (m_spellsLeft > 0) // only use spells if a spell is left to use
+	{
+		spellUsed = true;
+		m_spellsLeft--; // take away a spell use now that one is being used
+	}
+	else
+	{
+		std::cout << "You are out of spell uses!" << std::endl << std::endl;
+	}
+
+	return spellUsed;
+}
+
+/// <summary>
+/// Get the Player's weapon priority to decide turn order
+/// </summary>
+/// <returns></returns>
+int Orc::getPriority() const
+{
+	return m_turnPriority;
+}
+
+/// <summary>
+/// Get the Player to choose an action for the Orc
+/// </summary>
 void Orc::pickAction()
 {
 	int chosenAction = 0;
+	bool hasChosen = false;
 
-	while (chosenAction <= 0 || chosenAction > 3)
+	if (!m_paralysed) // only let the player choose an action if they're not paralysed!
 	{
-		std::cout << "1: Use Weapon\n2: Use Spell\n3: Use Shield (lasts this round only!)" << std::endl;
-		std::cout << "Please choose an action: ";
-		std::cin >> chosenAction;
+		while (chosenAction <= 0 || chosenAction > 3 && !hasChosen)
+		{
+			std::cout << "1: Use Weapon\n2: Use Spell\n3: Use Shield (lasts this round only!)" << std::endl;
+			std::cout << "Please choose an action: ";
+			std::cin >> chosenAction;
+			std::cout << std::endl;
 
-		if (chosenAction == 1)
-		{
-			m_usingWeapon = true;
-			m_usingSpell = false;
-		} 
-		else if (chosenAction == 2)
-		{
-			m_usingWeapon = false;
-			m_usingSpell = true;
+			if (chosenAction == 1) // use weapon
+			{
+				m_usingWeapon = true;
+				m_usingSpell = false;
+				hasChosen = true;
+			}
+			else if (chosenAction == 2) // use spell
+			{
+				if (useSpell())
+				{
+					hasChosen = true;
+					m_usingWeapon = false;
+					m_usingSpell = true;
+				}
+				else
+				{
+					hasChosen = false;
+					chosenAction = 0;
+				}
+			}
+			else if (chosenAction == 3) // use shield
+			{
+				if (useShield())
+				{
+					hasChosen = true;
+					m_usingWeapon = false;
+					m_usingSpell = false;
+				}
+				else
+				{
+					hasChosen = false;
+					chosenAction = 0;
+				}
+			}
+			else // they choose something that wasn't intended
+			{
+				std::cout << "Incorrect chosen given! Please choose again." << std::endl << std::endl;
+			}
 		}
-		else
-		{
-			m_usingWeapon = false;
-			m_usingSpell = false;
-			useShield();
-		}
+	}
+	else
+	{
+		std::cout << "*******************************************" << std::endl;
+		std::cout << "Orc is paralysed! They cannot act this turn!" << std::endl;
+		std::cout << "*******************************************" << std::endl;
+		m_paralysed = false; // now that their turn has been skipped for this round, let them act again next time
 	}
 }
 
+/// <summary>
+/// Is the Orc using a Weapon to attack?
+/// </summary>
+/// <returns>Orc is using Wep: True, Orc isn't using Wep: False</returns>
 bool Orc::isUsingWep() const
 {
 	return m_usingWeapon;
 }
 
+/// <summary>
+/// Is the Orc using a Spell to attack>
+/// </summary>
+/// <returns>Orc is using Spell: True, Orc isn't using Spell: False</returns>
 bool Orc::isUsingSpell() const
 {
 	return m_usingSpell;
 }
 
 /// <summary>
-/// Calculate damage the Player will take (aka the Orc)
+/// Calculate damage the Player will take based on what the AI chose
 /// </summary>
 /// <param name="t_enemyWep">Enemy's weapon type</param>
 /// <param name="t_enemySpell">Enemy's chosen spell</param>
@@ -312,16 +420,16 @@ int Orc::calcDamage(Character::WeaponChoice t_enemyWep, Character::SpellChoice t
 		case SpellChoice::IBEAM:
 
 			if (!m_shieldActive || m_chosenShield != ShieldChoice::ICE)  // if they don't have their shield up
-			{														  // or if the shield they chose wasn't fire
+			{														  // or if the shield they chose wasn't ice
 				finalDamage += m_spellDamages[SpellChoice::IBEAM];;
 				std::cout << "Hit with Ice Beam! Orc took " << m_spellDamages[SpellChoice::IBEAM] << " damage!" << std::endl;
 
 				chance = rand() % 10 + 1;
 
-				if (chance > 7) // 30% chance to burn
+				if (chance > 5) // 50% chance to freeze
 				{
 					m_frozen = true;
-					std::cout << "Orc was frozen solid! He'll go second in the next round!" << std::endl;
+					std::cout << "Orc was frozen solid! They may go second in the next round!" << std::endl;
 				}
 			}
 			else
@@ -333,16 +441,16 @@ int Orc::calcDamage(Character::WeaponChoice t_enemyWep, Character::SpellChoice t
 		case SpellChoice::SBOLT:
 
 			if (!m_shieldActive || m_chosenShield != ShieldChoice::ELEC)  // if they don't have their shield up
-			{														  // or if the shield they chose wasn't fire
+			{														  // or if the shield they chose wasn't electric
 				finalDamage += m_spellDamages[SpellChoice::SBOLT];
 				std::cout << "Hit with Sky Bolt! Orc took " << m_spellDamages[SpellChoice::SBOLT] << " damage!" << std::endl;
 
 				chance = rand() % 10 + 1;
 
-				if (chance > 9) // 10% chance to burn
+				if (chance > 9) // 10% chance to paralyse
 				{
 					m_paralysed = true;
-					std::cout << "TrOrcoll was paralysed! Orc misses his next action!" << std::endl;
+					std::cout << "Orc was paralysed! Orc misses their next action!" << std::endl;
 				}
 			}
 			else
@@ -357,10 +465,15 @@ int Orc::calcDamage(Character::WeaponChoice t_enemyWep, Character::SpellChoice t
 		}
 	}
 
-	if (m_burning)
+	if (m_burning) // if the orc is on fire, burn them
 	{
 		finalDamage += 2;
 		std::cout << "On fire! Orc took 2 damage." << std::endl;
+	}
+
+	if (m_frozen)
+	{
+		m_turnPriority = 0; // if frozen, always go last (unless both players have low priority)
 	}
 
 	return finalDamage;

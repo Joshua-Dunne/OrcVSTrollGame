@@ -23,7 +23,7 @@ public:
 	void run(); // starts the game
 
 	const int m_MAX_TURNS = 2;
-	const int m_MAX_ROUNDS = 2;
+	const int m_MAX_ROUNDS = 4;
 
 private:
 	void update();

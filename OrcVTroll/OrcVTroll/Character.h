@@ -1,3 +1,8 @@
+/// <summary>
+/// Joshua Dunne
+/// C00241588
+/// </summary>
+
 #pragma once
 #include <iostream>
 
@@ -8,10 +13,11 @@ public:
 	~Character();
 
 	enum WeaponChoice { NONE_W, LANCE, SWORD, AXE, HAMMER, FISTS, DAGGER, FLAIL };
-	int m_weaponDamages[8]{ 0,3,3,4,5,2,3,4 };
+	int m_weaponDamages[8]{ 0,3,3,4,5,2,3,4 }; // damage for each weapon, first entr yis 0 as its no weapon whatsoever
 	enum SpellChoice { NONE_S, DBREATH, IGNITE, FBITE, IBEAM, SBOLT };
-	int m_spellDamages[6]{ 0,8,4,6,4,3 };
+	int m_spellDamages[6]{ 0,8,4,6,4,3 }; // damage for each spell, first entry is 0 as its no spell whatsoever
 	enum ShieldChoice { NONE_SH, FIRE, ICE, ELEC };
+	int m_weaponPriorities[8]{ 0,1,1,0,0,2,2,1 }; // 0 is low priority, 1 is neutral, 2 is high priority
 
 	
 

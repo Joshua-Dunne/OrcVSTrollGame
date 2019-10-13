@@ -68,6 +68,8 @@ void Game::update()
 
 				m_turnCount++; // Increase the turn count (2 turns per round)
 
+				// figure out who's turn it will be for the next loop
+
 				if (m_turnCount >= m_MAX_TURNS)
 				{
 					m_currentTurn = TurnState::WAITING; // if both players have taken their turns,
@@ -84,7 +86,9 @@ void Game::update()
 				m_currentDamage = &m_orcDamage;
 				m_charTakingDamage = &m_orc;
 
-				m_turnCount++;
+				m_turnCount++; // Increase the turn count (2 turns per round)
+
+				// figure out who's turn it will be for the next loop
 
 				if (m_turnCount >= m_MAX_TURNS)
 				{
@@ -103,21 +107,40 @@ void Game::update()
 				m_turnCount = 0;
 				m_roundCount++;
 
-				if (m_roundCount < m_MAX_ROUNDS)
+				if (m_roundCount < m_MAX_ROUNDS) // as long as there are rounds left, keeping going through turns
 				{	
 					std::cout << "Deciding next turn: ";
-					int chance = 0;
-					chance = rand() % 10 + 1;
 
-					if (chance > 5)
+					m_orc.decreaseShieldDuration(); // take away from troll/orc shield duration now that the round is over.
+					m_troll.decreaseShieldDuration(); // only doing it now as shield decreases per round, not per turn.
+
+					if (m_orc.getPriority() > m_troll.getPriority()) // if the orc has priority
 					{
 						m_currentTurn = TurnState::ORC;
-						std::cout << "Orc goes first" << std::endl;
+						std::cout << "Orc has priority! Orc goes first" << std::endl;
 					}
-					else
+					else if (m_troll.getPriority() > m_orc.getPriority()) // if the troll has priority
 					{
 						m_currentTurn = TurnState::TROLL;
-						std::cout << "Troll goes first" << std::endl;
+						std::cout << "Troll has priority! Troll goes first" << std::endl;
+					}
+					else if (m_orc.getPriority() == m_troll.getPriority()) // if priority is the same
+					{ // randomly decide who goes first
+
+						int chance = 0;
+
+						chance = rand() % 10 + 1; // 1 -> 10
+
+						if (chance > 5) // 50% chance
+						{
+							m_currentTurn = TurnState::ORC;
+							std::cout << "Orc goes first" << std::endl;
+						}
+						else
+						{
+							m_currentTurn = TurnState::TROLL;
+							std::cout << "Troll goes first" << std::endl;
+						}
 					}
 				}
 				else
@@ -136,6 +159,7 @@ void Game::update()
 					{
 						std::cout << "Both Players took the same damage. It's a Tie!" << std::endl;
 					}
+					system("Pause");
 					m_currentState = GameState::QUIT; // we're done, so we break out of the loop
 				}
 			}
